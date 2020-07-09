@@ -40,6 +40,20 @@ int main(int argc, char* argv[]) {
 
 	atexit(&waitForExit);
 
+	// TODO: Replace with a menu
+	printf("Press START to load wario.vb\n");
+		while (aptMainLoop())
+	{
+		svcSleepThread(1);
+		hidScanInput();
+
+		// Respond to user input
+		u32 kDown = hidKeysDown();
+		if (kDown & KEY_START)
+			break;
+
+	}
+
 	printf("Initializing app\n");
 
 	init_app();

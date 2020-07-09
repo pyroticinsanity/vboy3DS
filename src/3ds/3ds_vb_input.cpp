@@ -3,6 +3,9 @@
 
 #include "3ds_vb_input.h"
 
+// Mednafen externs
+extern int GameThreadRun;
+
 u16 wii_paddata = 0;
 
 void updateKey(u16 key, u16* result)
@@ -13,6 +16,16 @@ void updateKey(u16 key, u16* result)
 
 void wii_vb_update_controls()
 {
+
+	bool isRunning = aptMainLoop();
+	if(!isRunning)
+	{
+		GameThreadRun = 0;
+		return;
+	}
+
+	svcSleepThread(1);
+
 	hidScanInput();
 	u32 hDown = hidKeysHeld();
 	u16 result = 0;
