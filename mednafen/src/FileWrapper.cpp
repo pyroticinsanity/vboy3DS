@@ -84,14 +84,14 @@ FileWrapper::FileWrapper(FileWrapper &original) : OpenedMode(original.OpenedMode
   {
     ErrnoHolder ene(errno);
 
-    throw(MDFN_Error(ene.Errno(), _("Error duping file descriptor: %s"), ene.StrError()));
+    exit(1); //throw(MDFN_Error(ene.Errno(), _("Error duping file descriptor: %s"), ene.StrError()));
   }
 
   if(!(fp = fdopen(duped_fd, (OpenedMode == MODE_READ) ? "rb" : "wb")))
   {
     ErrnoHolder ene(errno);
 
-    throw(MDFN_Error(ene.Errno(), _("Error during fdopen(): %s"), ene.StrError()));
+    exit(1); //throw(MDFN_Error(ene.Errno(), _("Error during fdopen(): %s"), ene.StrError()));
   }
 }
 #endif
@@ -123,7 +123,7 @@ FileWrapper::FileWrapper(const char *path, const int mode) : OpenedMode(mode)
     {
       ErrnoHolder ene(errno);
 
-      throw(MDFN_Error(ene.Errno(), _("Error opening file \"%s\": %s"), path_save.c_str(), ene.StrError()));
+      exit(1); //throw(MDFN_Error(ene.Errno(), _("Error opening file \"%s\": %s"), path_save.c_str(), ene.StrError()));
     }
     fp = fdopen(tmpfd, "wb");
   }
@@ -132,7 +132,7 @@ FileWrapper::FileWrapper(const char *path, const int mode) : OpenedMode(mode)
   {
     ErrnoHolder ene(errno);
 
-    throw(MDFN_Error(ene.Errno(), _("Error opening file \"%s\": %s"), path_save.c_str(), ene.StrError()));
+    exit(1); //throw(MDFN_Error(ene.Errno(), _("Error opening file \"%s\": %s"), path_save.c_str(), ene.StrError()));
   }
 }
 
@@ -158,10 +158,10 @@ uint64 FileWrapper::read(void *data, uint64 count, bool error_on_eof)
     ErrnoHolder ene(errno);
 
     if(ferror(fp))
-      throw(MDFN_Error(ene.Errno(), _("Error reading from opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
+      exit(1); //throw(MDFN_Error(ene.Errno(), _("Error reading from opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
 
     if(error_on_eof)
-      throw(MDFN_Error(ene.Errno(), _("Error reading from opened file \"%s\": %s"), path_save.c_str(), "EOF"));
+      exit(1); //throw(MDFN_Error(ene.Errno(), _("Error reading from opened file \"%s\": %s"), path_save.c_str(), "EOF"));
   }
 
   return(read_count);
@@ -173,7 +173,7 @@ void FileWrapper::flush(void)
   {
     ErrnoHolder ene(errno);
 
-    throw(MDFN_Error(ene.Errno(), _("Error flushing to opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
+    exit(1); //throw(MDFN_Error(ene.Errno(), _("Error flushing to opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
   }
 }
 
@@ -183,7 +183,7 @@ void FileWrapper::write(const void *data, uint64 count)
   {
     ErrnoHolder ene(errno);
 
-    throw(MDFN_Error(ene.Errno(), _("Error writing to opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
+    exit(1); //throw(MDFN_Error(ene.Errno(), _("Error writing to opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
   }
 }
 
@@ -204,11 +204,11 @@ int FileWrapper::scanf(const char *format, ...)
   {
     ErrnoHolder ene(errno);
 
-    throw(MDFN_Error(ene.Errno(), _("Error reading from opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
+    exit(1); //throw(MDFN_Error(ene.Errno(), _("Error reading from opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
   }
 
   //if(ret < 0 || ret == EOF)
-  // throw(MDFN_Error(0, _("%s error on format string \"%s\""), "trio_vfscanf()", format));
+  // exit(1); //throw(MDFN_Error(0, _("%s error on format string \"%s\""), "trio_vfscanf()", format));
 
   return(ret);
 }
@@ -229,7 +229,7 @@ void FileWrapper::printf(const char *format, ...)
   {
     ErrnoHolder ene(errno);
 
-    throw(MDFN_Error(ene.Errno(), _("Error writing to opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
+    exit(1); //throw(MDFN_Error(ene.Errno(), _("Error writing to opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
   }
 }
 
@@ -239,7 +239,7 @@ void FileWrapper::put_char(int c)
   {
     ErrnoHolder ene(errno);
 
-    throw(MDFN_Error(ene.Errno(), _("Error writing to opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
+    exit(1); //throw(MDFN_Error(ene.Errno(), _("Error writing to opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
   }
 }
 
@@ -262,7 +262,7 @@ void FileWrapper::seek(int64 offset, int whence)
   {
     ErrnoHolder ene(errno);
 
-    throw(MDFN_Error(ene.Errno(), _("Error seeking in opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
+    exit(1); //throw(MDFN_Error(ene.Errno(), _("Error seeking in opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
   }
 }
 
@@ -274,7 +274,7 @@ int64 FileWrapper::size(void)
   {
     ErrnoHolder ene(errno);
 
-    throw(MDFN_Error(ene.Errno(), _("Error getting the size of opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
+    exit(1); //throw(MDFN_Error(ene.Errno(), _("Error getting the size of opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
   }
 
   return(buf.st_size);
@@ -301,7 +301,7 @@ int64 FileWrapper::tell(void)
   {
     ErrnoHolder ene(errno);
 
-    throw(MDFN_Error(ene.Errno(), _("Error getting position in opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
+    exit(1); //throw(MDFN_Error(ene.Errno(), _("Error getting position in opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
   }
 
   return(offset);

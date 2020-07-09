@@ -298,7 +298,7 @@ SexyAL_device *SexyALI_SDL_Open(const char *id, SexyAL_format *format, SexyAL_bu
     //puts("Standalone");
   }
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   iflags = SDL_INIT_AUDIO | SDL_INIT_TIMER;
 #else
   iflags = SDL_INIT_AUDIO;

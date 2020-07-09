@@ -40,7 +40,7 @@
 
 #include	"string/escape.h"
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 #include	"netplay.h"
 #include	"netplay-driver.h"
 #include	"qtrecord.h"
@@ -68,7 +68,7 @@ static MDFNSetting_EnumList CompressorList[] =
 
 static MDFNSetting_EnumList VCodec_List[] =
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   { "raw", (int)QTRecord::VCODEC_RAW, "Raw",
   gettext_noop("A fast codec, computationally, but will cause enormous file size and may exceed your storage medium's sustained write rate.") },
 
@@ -157,7 +157,7 @@ static uint32 PortDataLenCache[16];
 MDFNGI *MDFNGameInfo = NULL;
 static bool CDInUse = 0;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 static QTRecord *qtrecorder = NULL;
 static WAVRecord *wavrecorder = NULL;
 #endif
@@ -169,7 +169,7 @@ static bool FFDiscard = FALSE; // TODO:  Setting to discard sound samples instea
 static MDFN_PixelFormat last_pixel_format;
 static double last_sound_rate;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 bool MDFNI_StartWAVRecord(const char *path, double SoundRate)
 {
   try
@@ -252,7 +252,7 @@ void MDFNI_StopAVRecord(void)
   {
     if(MDFNGameInfo)
     {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
       if(MDFNnetplay)
         MDFNI_NetplayStop();
 
@@ -272,7 +272,7 @@ void MDFNI_StopAVRecord(void)
 
       MDFNGameInfo = NULL;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
       MDFN_StateEvilEnd();
 
       if(CDInUse)
@@ -282,7 +282,7 @@ void MDFNI_StopAVRecord(void)
       }
 #endif
     }
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     TBlur_Kill();
 #endif
 
@@ -291,7 +291,7 @@ void MDFNI_StopAVRecord(void)
 #endif
   }
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   int MDFNI_NetplayStart(uint32 local_players, uint32 netmerge, const std::string &nickname, const std::string &game_key, const std::string &connect_password)
   {
     return(NetplayStart((const char**)PortDeviceCache, PortDataLenCache, local_players, netmerge, nickname, game_key, connect_password));
@@ -351,7 +351,7 @@ void MDFNI_StopAVRecord(void)
   extern MDFNGI EmulatedSMS, EmulatedGG;
 #endif
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   extern MDFNGI EmulatedCDPlay;
 #endif
 
@@ -390,7 +390,7 @@ void MDFNI_StopAVRecord(void)
     fclose(fp);
   }
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   // TODO: LoadCommon()
 
   MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
@@ -565,7 +565,7 @@ void MDFNI_StopAVRecord(void)
     struct stat stat_buf;
     std::vector<FileExtensionSpecStruct> valid_iae;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     if(strlen(name) > 4 && (!strcasecmp(name + strlen(name) - 4, ".cue") || !strcasecmp(name + strlen(name) - 4, ".toc")))
     {
       return(MDFNI_LoadCD(force_module, name));
@@ -690,17 +690,27 @@ void MDFNI_StopAVRecord(void)
     MDFNGameInfo->name = NULL;
     MDFNGameInfo->rotated = 0;
 
+    // TODO Remove printf statements
+    printf("Loading game info\n");
+
     if(MDFNGameInfo->Load(name, &GameFile) <= 0)
     {
+      printf("Failed to load\n");
       GameFile.Close();
       MDFN_indent(-2);
       MDFNGameInfo = NULL;
       return(0);
     }
 
+    printf("Finished loading game info\n");
+
     if(MDFNGameInfo->GameType != GMT_PLAYER)
     {
-      MDFN_LoadGameCheats(NULL);
+      printf("Cheats are disabled\n");
+      // TODO: Cheats disabled since it seems to halt the system.
+     // MDFN_LoadGameCheats(NULL);
+
+      printf("Installing read patches\n");
       MDFNMP_InstallReadPatches();
     }
 
@@ -708,11 +718,16 @@ void MDFNI_StopAVRecord(void)
     MDFNDBG_PostGameLoad();
 #endif
 
+    printf("Checking states\n");
+
     MDFNSS_CheckStates();
-#ifndef WII
+
+    printf("Done checking states\n");
+#if !defined(WII) && !defined(_3DS)
     MDFNMOV_CheckMovies();
 #endif
 
+    printf("Reset messages\n");
     MDFN_ResetMessages();	// Save state, status messages, etc.
 
     MDFN_indent(-2);
@@ -733,11 +748,12 @@ void MDFNI_StopAVRecord(void)
         *tmp = 0;
     }
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     TBlur_Init();
     MDFN_StateEvilBegin();
 #endif
 
+    printf("Done loading\n");
     last_sound_rate = -1;
     memset(&last_pixel_format, 0, sizeof(MDFN_PixelFormat));
 
@@ -897,7 +913,7 @@ void MDFNI_StopAVRecord(void)
       &EmulatedGG,
 #endif
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
       &EmulatedCDPlay
 #endif
     };
@@ -1018,7 +1034,7 @@ void MDFNI_StopAVRecord(void)
 
   void MDFNI_Kill(void)
   {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     MDFN_SaveSettings();
 #endif
 
@@ -1049,7 +1065,7 @@ void MDFNI_StopAVRecord(void)
       int32 SoundBufSize = espec->SoundBufSize - espec->SoundBufSizeALMS;
       const int32 SoundBufMaxSize = espec->SoundBufMaxSize - espec->SoundBufSizeALMS;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
       if(qtrecorder && (volume_save != 1 || multiplier_save != 1))
       {
         int32 orig_size = SoundBufPristine.size();
@@ -1085,7 +1101,7 @@ void MDFNI_StopAVRecord(void)
         }
       }
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
       try
       {
         if(wavrecorder)
@@ -1194,7 +1210,7 @@ void MDFNI_StopAVRecord(void)
 
   void MDFN_MidSync(EmulateSpecStruct *espec)
   {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     if(MDFNnetplay)
       return;
 #endif
@@ -1203,7 +1219,7 @@ void MDFNI_StopAVRecord(void)
 
     MDFND_MidSync(espec);
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     for(int x = 0; x < 16; x++)
       if(PortDataCache[x])
         MDFNMOV_AddJoy(PortDataCache[x], PortDataLenCache[x]);
@@ -1242,7 +1258,7 @@ void MDFNI_StopAVRecord(void)
 
     // We want to record movies without any dropped video frames and without fast-forwarding sound distortion and without custom volume.
     // The same goes for WAV recording(sans the dropped video frames bit :b).
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     if(qtrecorder || wavrecorder)
     {
       multiplier_save = espec->soundmultiplier;
@@ -1294,7 +1310,7 @@ void MDFNI_StopAVRecord(void)
 
     ProcessAudio(espec);
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     if(qtrecorder)
     {
       int16 *sb_backup = espec->SoundBuf;
@@ -1457,7 +1473,7 @@ void MDFNI_StopAVRecord(void)
 
   void MDFN_QSimpleCommand(int cmd)
   {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     if(MDFNnetplay)
       MDFNNET_SendCommand(cmd, 0);
     else

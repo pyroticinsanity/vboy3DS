@@ -18,7 +18,11 @@
 #include "vb.h"
 #include "input.h"
 
+#if defined(WII)
 #include "wii_vb_input.h"
+#elif defined(_3DS)
+#include "3ds_vb_input.h"
+#endif
 
 namespace MDFN_IEN_VB
 {
@@ -140,7 +144,7 @@ void VBINPUT_Write(v810_timestamp_t timestamp, uint32 A, uint8 V)
 }
   void VBINPUT_Frame(void)
   {
-#ifdef WII
+#if defined(WII) || defined(_3DS)
     PadData = wii_paddata;
 #else
     PadData = (MDFN_de16lsb(data_ptr) << 2) | 0x2;

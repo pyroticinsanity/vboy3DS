@@ -32,7 +32,7 @@
 #include "state.h"
 #include "md5.h"
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 #include "movie.h"
 #endif
 

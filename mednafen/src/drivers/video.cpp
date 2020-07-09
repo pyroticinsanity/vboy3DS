@@ -25,7 +25,7 @@
 #include "fps.h"
 #include "../video/selblur.h"
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 #include "help.h"
 #include "hqxx-common.h"
 #include "overlay.h"
@@ -37,6 +37,10 @@
 #include "debugger.h"
 #include "2xSaI.h"
 #include "video-state.h"
+#endif
+
+#ifdef _3DS
+#include <3ds.h>
 #endif
 
 #ifdef WII_NETTRACE
@@ -135,7 +139,7 @@ static MDFN_PixelFormat pf_overlay, pf_normal;
 
 void ClearBackBuffer(void)
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(cur_flags & SDL_OPENGL)
   {
     ClearBackBufferOpenGL(screen);
@@ -144,7 +148,7 @@ void ClearBackBuffer(void)
   {
 #endif
     SDL_FillRect(screen, NULL, 0);
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   }
 #endif
 }
@@ -152,7 +156,7 @@ void ClearBackBuffer(void)
 /* Return 1 if video was killed, 0 otherwise(video wasn't initialized). */
 void KillVideo(void)
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(IconSurface)
   {
     SDL_FreeSurface(IconSurface);
@@ -520,7 +524,7 @@ int InitVideo(MDFNGI *gi)
   else
     SDL_WM_SetCaption("Mednafen","Mednafen");
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   #ifdef WIN32
     #ifdef LSB_FIRST
   IconSurface=SDL_CreateRGBSurfaceFrom((void *)mednafen_playicon.pixel_data,32,32,32,32*4,0xFF,0xFF00,0xFF0000,0xFF000000);
@@ -539,7 +543,7 @@ int InitVideo(MDFNGI *gi)
 
   int rs, gs, bs, as;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(cur_flags & SDL_OPENGL)
   {
     if(!InitOpenGL(evideoip, _video.scanlines, _video.pixshader, screen, &rs, &gs, &bs, &as))
@@ -571,7 +575,7 @@ int InitVideo(MDFNGI *gi)
   real_bs = bs;
   real_as = as;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   /* HQXX only supports this pixel format, sadly, and other pixel formats
   can't be easily supported without rewriting the filters.
   We do conversion to the real screen format in the blitting function. 
@@ -658,7 +662,7 @@ int InitVideo(MDFNGI *gi)
   {
     ClearBackBuffer();
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     if(cur_flags & SDL_OPENGL)
       FlipOpenGL();
     else
@@ -685,7 +689,7 @@ void VideoShowMessage(UTF8 *text)
 
 #define MK_COLOR_A(tmp_surface, r,g,b,a) ( ((a)<<tmp_surface->format->Ashift) | ((r)<<tmp_surface->format->Rshift) | ((g) << tmp_surface->format->Gshift) | ((b) << tmp_surface->format->Bshift))
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 void BlitRaw(SDL_Surface *src, const SDL_Rect *src_rect, const SDL_Rect *dest_rect)
 {
   if(cur_flags & SDL_OPENGL)
@@ -710,7 +714,7 @@ static bool IsInternalMessageActive(void)
 
 static bool BlitInternalMessage(void)
 {
-#ifndef WII  
+#if !defined(WII) && !defined(_3DS)  
   if(howlong < MDFND_GetTime())
   {
     if(CurrentMessage)
@@ -740,7 +744,7 @@ static bool OverlayOK;	// Set to TRUE when vdriver == "overlay", and it's safe t
 // requires an RGB pixel format(HQnx)
 // Otherwise, set to FALSE.
 // (Set in the BlitScreen function before any calls to SubBlit())
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 static void SubBlit(const bool alpha_blend, const SDL_Rect &src_rect, const SDL_Rect &dest_rect)
 {
   SDL_Surface *eff_source_surface = source_surface;
@@ -951,7 +955,7 @@ void BlitScreen(MDFN_Surface *msurface, const MDFN_Rect *DisplayRect, const MDFN
     ClearBackBuffer();
   }
 
-#ifdef WII
+#if defined(WII) || defined(_3DS)
 #if BPP == 8
   u8* dest = (u8*)screen->pixels;
   u8* src = msurface->pixels8;
@@ -1248,7 +1252,7 @@ void BlitScreen(MDFN_Surface *msurface, const MDFN_Rect *DisplayRect, const MDFN
     {
 #endif
       SDL_Flip(screen); 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     }
   }
   else

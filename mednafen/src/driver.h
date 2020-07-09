@@ -10,7 +10,7 @@
 #include "mempatcher-driver.h"
 #include "video-driver.h"
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 #include "netplay-driver.h"
 #include "movie-driver.h"
 #endif

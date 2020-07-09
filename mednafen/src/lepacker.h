@@ -38,7 +38,7 @@ namespace MDFN
       if(read_mode)
       {
         if((read_pos + sizeof(T)) > csize)
-          throw(std::out_of_range("LEPacker::operator^"));
+          exit(1); //throw(std::out_of_range("LEPacker::operator^"));
 
         uint8 *ptr = &(*this)[read_pos];
         val = 0;
@@ -66,7 +66,7 @@ namespace MDFN
       if(read_mode)
       {
         if((read_pos + sizeof(bool)) > csize)
-          throw(std::out_of_range("LEPacker::operator^ for bool"));
+          exit(1); //throw(std::out_of_range("LEPacker::operator^ for bool"));
 
         uint8 *ptr = &(*this)[read_pos];
         val = (bool)*ptr;

@@ -373,7 +373,7 @@
 #define INTDIV0_RAISES_SIGFPE 1
 
 /* Define on little-endian platforms. */
-#if 0
+#ifdef _3DS
 #define LSB_FIRST 1
 #endif
 
@@ -397,12 +397,14 @@
 #define MPC_FIXED_POINT 1
 
 /* Define on little-endian platforms. */
-#if 0
+#ifdef _3DS
 #define MPC_LITTLE_ENDIAN 1
-#endif 
+#endif
 
 /* Define on big-endian platforms. */
+#ifdef WII
 #define MSB_FIRST 1
+#endif
 
 /* Define if we are compiling with network play code. */
 #undef NETWORK

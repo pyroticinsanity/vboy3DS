@@ -29,7 +29,7 @@
 #include "joystick.h"
 #include "fps.h"
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 #include "netplay.h"
 #include "cheat.h"
 #include "debugger.h"
@@ -518,7 +518,7 @@ static void BuildPortInfo(MDFNGI *gi)
 
 static void IncSelectedDevice(unsigned int port)
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(MDFNDnetplay)
   {
     MDFN_DispMessage(_("Cannot change input device during netplay."));
@@ -864,7 +864,7 @@ static uint8 BarcodeWorldData[1 + 13];
 
 static void DoKeyStateZeroing(void)
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(IConfig == none && !(cidisabled & 0x1))	// Match the statement in CheckCommandKeys for when DoKeyStateZeroing()
     // is called insterad of CheckCommandKeys
   {
@@ -902,7 +902,7 @@ static void DoKeyStateZeroing(void)
 
 static void CheckCommandKeys(void)
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(IConfig == none && !(cidisabled & 0x1))
   {
     if(CK_Check(CK_TOGGLE_HELP))

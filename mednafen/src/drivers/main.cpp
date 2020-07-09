@@ -43,7 +43,19 @@
 #include "ers.h"
 #include <math.h>
 
-#ifndef WII
+#if defined(WII)
+
+#include "wii_app.h"
+#include "wii_sdl.h"
+#include "wii_vb.h"
+#include "wii_vb_input.h"
+
+#elif defined(_3DS)
+#include "3ds_app.h"
+#include "3ds_vb.h"
+#include "3ds_vb_input.h"
+// TODO
+#else
 #include <strings.h>
 #include "../qtrecord.h"
 #include "remote.h"
@@ -53,11 +65,6 @@
 #include "cheat.h"
 #include "opengl.h"
 #include "video-state.h"
-#else
-#include "wii_app.h"
-#include "wii_sdl.h"
-#include "wii_vb.h"
-#include "wii_vb_input.h"
 #endif
 
 #ifdef WII_NETTRACE
@@ -67,7 +74,7 @@
 
 static bool RemoteOn = FALSE;
 bool pending_save_state, pending_snapshot, pending_save_movie;
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 static volatile Uint32 MainThreadID = 0;
 #else
 volatile Uint32 MainThreadID = 0;
@@ -168,7 +175,7 @@ MDFNSetting DriverSettings[] =
   { "netplay.smallfont", MDFNSF_NOFLAGS, gettext_noop("Use small(tiny!) font for netplay chat console."), NULL, MDFNST_BOOL, "0" },
 
   { "video.fs", MDFNSF_NOFLAGS, gettext_noop("Enable fullscreen mode."), NULL, MDFNST_BOOL, "0", },
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   { "video.driver", MDFNSF_NOFLAGS, gettext_noop("Select video driver, \"opengl\" or \"sdl\"."), NULL, MDFNST_ENUM, "opengl", NULL, NULL, NULL,NULL, VDriver_List },
 #else
   { "video.driver", MDFNSF_NOFLAGS, gettext_noop("Select video driver, \"opengl\" or \"sdl\"."), NULL, MDFNST_ENUM, "sdl", NULL, NULL, NULL,NULL, VDriver_List },
@@ -192,7 +199,7 @@ MDFNSetting DriverSettings[] =
   { "ckdelay", MDFNSF_NOFLAGS, gettext_noop("Dangerous key action delay."), gettext_noop("The length of time, in milliseconds, that a button/key corresponding to a \"dangerous\" command like power, reset, exit, etc. must be pressed before the command is executed."), MDFNST_UINT, "0", "0", "99999" },
   { "nothrottle", MDFNSF_NOFLAGS, gettext_noop("Disable speed throttling when sound is disabled."), NULL, MDFNST_BOOL, "0"},
   { "autosave", MDFNSF_NOFLAGS, gettext_noop("Automatic load/save state on game load/save."), gettext_noop("Automatically save and load save states when a game is closed or loaded, respectively."), MDFNST_BOOL, "0"},
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   { "sound.driver", MDFNSF_NOFLAGS, gettext_noop("Select sound driver."), gettext_noop("The following choices are possible, sorted by preference, high to low, when \"default\" driver is used, but dependent on being compiled in."), MDFNST_ENUM, "default", NULL, NULL, NULL, NULL, SDriver_List },
 #else
   { "sound.driver", MDFNSF_NOFLAGS, gettext_noop("Select sound driver."), gettext_noop("The following choices are possible, sorted by preference, high to low, when \"default\" driver is used, but dependent on being compiled in."), MDFNST_ENUM, "sdl", NULL, NULL, NULL, NULL, SDriver_List },
@@ -378,7 +385,7 @@ void MakeVideoSettings(std::vector <MDFNSetting> &settings)
       sysname = (const char *)MDFNSystems[i]->shortname;
     }
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     //printf("%s\n", sysname);
     if(multires)
     {
@@ -466,7 +473,7 @@ void MakeVideoSettings(std::vector <MDFNSetting> &settings)
 
 }
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 static SDL_Thread *GameThread;
 #endif
 
@@ -475,7 +482,7 @@ volatile MDFN_Surface *VTBuffer[2] = { NULL, NULL };
 MDFN_Rect *VTLineWidths[2] = { NULL, NULL };
 
 static volatile int VTBackBuffer = 0;
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 static SDL_mutex *VTMutex = NULL, *EVMutex = NULL, *GameMutex = NULL;
 static SDL_mutex *StdoutMutex = NULL;
 #endif 
@@ -488,7 +495,7 @@ MDFN_Rect VTDisplayRects[2];
 
 void LockGameMutex(bool lock)
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(lock)
     SDL_mutexP(GameMutex);
   else
@@ -500,7 +507,7 @@ static char *soundrecfn=0;	/* File name of sound recording. */
 
 static char *qtrecfn = NULL;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 static char *DrBaseDirectory;
 #else
 char *DrBaseDirectory;
@@ -510,7 +517,7 @@ MDFNGI *CurGame=NULL;
 
 void MDFND_PrintError(const char *s)
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(RemoteOn)
     Remote_SendErrorMessage(s);
   else
@@ -531,6 +538,7 @@ void MDFND_PrintError(const char *s)
       SDL_mutexV(StdoutMutex);
   }
 #else
+printf("%s\n", s);
 #ifdef WII_NETTRACE
   net_print_string( NULL, 0, s );
 #endif
@@ -540,7 +548,7 @@ void MDFND_PrintError(const char *s)
 
 void MDFND_Message(const char *s)
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(RemoteOn)
     Remote_SendStatusMessage(s);
   else
@@ -555,6 +563,7 @@ void MDFND_Message(const char *s)
       SDL_mutexV(StdoutMutex);
   }
 #else
+  printf("%s\n", s);
 #ifdef WII_NETTRACE
   net_print_string( NULL, 0, s );
 #endif
@@ -829,7 +838,7 @@ static int DoArgs(int argc, char *argv[], char **filename)
   return(1);
 }
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 static volatile int NeedVideoChange = 0;
 #else
 volatile int NeedVideoChange = 0;
@@ -843,7 +852,7 @@ bool sound_active;	// true if sound is enabled and initialized
 
 static EmuRealSyncher ers;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 static int LoadGame(const char *force_module, const char *path)
 #else
 int LoadGame(const char *force_module, const char *path)
@@ -851,13 +860,14 @@ int LoadGame(const char *force_module, const char *path)
 {
   MDFNGI *tmp;
 
+  printf("Closing game\n");
   CloseGame();
 
   pending_save_state = 0;
   pending_save_movie = 0;
   pending_snapshot = 0;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(loadcd)
   {
     const char *system = loadcd;
@@ -871,17 +881,20 @@ int LoadGame(const char *force_module, const char *path)
   else
   {
 #endif
+  printf("Loading game\n");
     if(!(tmp=MDFNI_LoadGame(force_module, path)))
       return 0;
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   }
 #endif
+
+  printf("Init input\n");
   CurGame = tmp;
   InitGameInput(tmp);
 
   RefreshThrottleFPS(1);
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   SDL_mutexP(VTMutex);
   NeedVideoChange = -1;
   SDL_mutexV(VTMutex);
@@ -894,7 +907,7 @@ int LoadGame(const char *force_module, const char *path)
 #endif
     sound_active = 0;
 
-#ifdef WII
+#if defined(WII) || defined(_3DS)
     //
     // Only initialize sound once
     //
@@ -902,9 +915,10 @@ int LoadGame(const char *force_module, const char *path)
     if( first_time )
     {
 #endif
+      printf("Init sound\n");
       if(MDFN_GetSettingB("sound"))
         sound_active = InitSound(tmp);
-#ifdef WII
+#if defined(WII) || defined(_3DS)
       first_time = false;
     }
 #endif
@@ -912,20 +926,21 @@ int LoadGame(const char *force_module, const char *path)
     if(MDFN_GetSettingB("autosave"))
       MDFNI_LoadState(NULL, "mcq");
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     if(netconnect)
       MDFND_NetworkConnect();
 #endif
 
+    printf("Setting clock\n");
     ers.SetEmuClock(CurGame->MasterClock >> 32);
 
     GameThreadRun = 1;
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     GameThread = SDL_CreateThread(GameLoop, NULL);
 #endif
     ffnosound = MDFN_GetSettingB("ffnosound");
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     if(qtrecfn)
     {
       // MDFNI_StartAVRecord() needs to be called after MDFNI_Load(Game/CD)
@@ -958,9 +973,10 @@ int CloseGame(void)
 {
   if(!CurGame) return(0);
 
+  printf("CurGame not null\n");
   GameThreadRun = 0;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   SDL_WaitThread(GameThread, NULL);
 
   if(qtrecfn)	// Needs to be before MDFNI_Closegame() for now
@@ -976,7 +992,7 @@ int CloseGame(void)
   MDFNI_CloseGame();
 
   KillGameInput();
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   KillSound();
 #endif
 
@@ -986,14 +1002,14 @@ int CloseGame(void)
 }
 
 static void GameThread_HandleEvents(void);
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 static volatile int NeedExitNow = 0;
 #endif
 double CurGameSpeed = 1;
 
 void MainRequestExit(void)
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   NeedExitNow = 1;
 #endif
 }
@@ -1086,13 +1102,20 @@ namespace MDFN_IEN_VB
 int GameLoop(void *arg)
 {
   int sskip = 0;
+
+// TODO: Remove BOUND_HIGH_HACK since it isn't in the latest release.
+#ifdef BOUND_HIGH_HACK
+  int exitcount = 0;
+  while(GameThreadRun || exitcount > 0)
+#else
   while(GameThreadRun)
+#endif
   {
     int16 *sound;
     int32 ssize;
     int fskip;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     /* If we requested a new video mode, wait until it's set before calling the emulation code again.
     */
     while(NeedVideoChange)
@@ -1110,7 +1133,7 @@ int GameLoop(void *arg)
       }
     } while(InFrameAdvance && !NeedFrameAdvance);
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     if(MDFNDnetplay && !(NoWaiting & 0x2))	// TODO: Hacky, clean up.
       ers.SetETtoRT();
 #endif
@@ -1186,7 +1209,7 @@ int GameLoop(void *arg)
 
     do
     {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
       GameThread_HandleEvents();
 #endif
       VTBackBuffer = ThisBackBuffer;
@@ -1198,13 +1221,34 @@ int GameLoop(void *arg)
             sound[x] = 0;
       }
     } while(((InFrameAdvance && !NeedFrameAdvance) || GameLoopPaused) && GameThreadRun);
+
+#ifdef BOUND_HIGH_HACK
+    // This is an extremely lame hack that allows for "Bound High!" to work
+    // correctly with frame skipping. 
+    if( !GameThreadRun )
+    {
+      if( exitcount > 0 )
+      {
+        exitcount--;
+      }
+      else
+      {
+        // Only occurs with 50% frame skipping (the default)
+        int render_rate = wii_get_render_rate();        
+        if( render_rate == 50 && MDFN_IEN_VB::vb_skip_sum == 0 )
+        {
+          exitcount = 1;
+        }
+      }
+    }
+#endif
   }
   return(1);
 }   
 
 char *GetBaseDirectory(void)
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   char *ol;
   char *ret;
 
@@ -1271,7 +1315,7 @@ static volatile int gte_read = 0;
 static volatile int gte_write = 0;
 
 /* This function may also be called by the main thread if a game is not loaded. */
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 static void GameThread_HandleEvents(void)
 {
   SDL_Event gtevents_temp[gtevents_size];
@@ -1331,11 +1375,11 @@ void SDL_MDFN_ShowCursor(int toggle)
 
 void GT_ToggleFS(void)
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   SDL_mutexP(VTMutex);
 #endif
   NeedVideoChange = 1;
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   SDL_mutexV(VTMutex);
 
   if(SDL_ThreadID() != MainThreadID)
@@ -1348,11 +1392,11 @@ void GT_ToggleFS(void)
 
 void GT_ReinitVideo(void)
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   SDL_mutexP(VTMutex);
 #endif
   NeedVideoChange = -1;
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   SDL_mutexV(VTMutex);
 
   if(SDL_ThreadID() != MainThreadID)
@@ -1367,7 +1411,7 @@ void GT_ReinitVideo(void)
 
 static bool krepeat = 0;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 void PumpWrap(void)
 {
   SDL_Event event;
@@ -1490,7 +1534,7 @@ void MainSetEventHook(int (*eh)(const SDL_Event *event))
   EventHook = (volatile int (*)(const SDL_Event *))eh;
 }
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 static volatile int JoyModeChange = 0;
 #else
 volatile int JoyModeChange = 0;
@@ -1498,11 +1542,11 @@ volatile int JoyModeChange = 0;
 
 void SetJoyReadMode(int mode)	// 0 for events, 1 for manual function calling to update.
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   SDL_mutexP(VTMutex);
 #endif
   JoyModeChange = mode | 0x8;
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   SDL_mutexV(VTMutex);
 
   /* Only block if we're calling this from within the game loop(it is also called from within LoadGame(), called in the main loop). */
@@ -1518,7 +1562,7 @@ bool MT_FromRemote_SoundSync(void)
   bool ret = TRUE;
 
   GameThreadRun = 0;
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   SDL_WaitThread(GameThread, NULL);
 #endif
 
@@ -1532,7 +1576,7 @@ bool MT_FromRemote_SoundSync(void)
       ret = FALSE;
   }
   GameThreadRun = 1;
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   GameThread = SDL_CreateThread(GameLoop, NULL);
 #endif
 
@@ -1621,7 +1665,7 @@ char *GetFileDialog(void)
 }
 #endif
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 int main(int argc, char *argv[])
 #else
 int mednafen_main(int argc, char *argv[])
@@ -1660,7 +1704,7 @@ int mednafen_main(int argc, char *argv[])
   textdomain(PACKAGE);
 #endif
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(SDL_Init(SDL_INIT_VIDEO)) /* SDL_INIT_VIDEO Needed for (joystick config) event processing? */
   {
     fprintf(stderr, "Could not initialize SDL: %s\n", SDL_GetError());
@@ -1669,7 +1713,7 @@ int mednafen_main(int argc, char *argv[])
   }
 #endif
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(!(StdoutMutex = SDL_CreateMutex()))
   {
     MDFN_PrintError(_("Could not create mutex: %s\n"), SDL_GetError());
@@ -1688,7 +1732,7 @@ int mednafen_main(int argc, char *argv[])
   if(argc >= 2 && (!strcasecmp(argv[1], "-remote") || !strcasecmp(argv[1], "--remote")))
     RemoteOn = TRUE;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(RemoteOn)
     InitSTDIOInterface();
 #endif
@@ -1754,7 +1798,7 @@ int mednafen_main(int argc, char *argv[])
 
     //InitVideo(NULL);
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     VTMutex = SDL_CreateMutex();
     EVMutex = SDL_CreateMutex();
     GameMutex = SDL_CreateMutex();
@@ -1769,7 +1813,7 @@ int mednafen_main(int argc, char *argv[])
     InitJoysticks();
     InitCommandInput();
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     NeedExitNow = 0;
 #endif
 
@@ -1789,7 +1833,7 @@ int mednafen_main(int argc, char *argv[])
       uint32 pitch32 = CurGame->fb_width; 
       //uint32 pitch32 = round_up_pow2(CurGame->fb_width);
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
       MDFN_PixelFormat nf(MDFN_COLORSPACE_RGB, 0, 8, 16, 24);
       nf.bpp = 32;
 #else
@@ -1820,7 +1864,7 @@ int mednafen_main(int argc, char *argv[])
       }
 #endif
     }
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     else
       NeedExitNow = 1;
 
@@ -1855,7 +1899,7 @@ int mednafen_main(int argc, char *argv[])
         {
           if(!InitVideo(CurGame))
           {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
             NeedExitNow = 1;
             break;
 #else
@@ -1876,7 +1920,7 @@ int mednafen_main(int argc, char *argv[])
         NeedVideoChange = 0;
       }
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
       if(VTReady)
       {
         //static int last_time;
@@ -1895,7 +1939,7 @@ int mednafen_main(int argc, char *argv[])
 #endif
 
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
       PumpWrap();
 
       SDL_mutexV(VTMutex);   /* Unlock mutex */
@@ -1906,7 +1950,7 @@ int mednafen_main(int argc, char *argv[])
 
     CloseGame();
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     SDL_DestroyMutex(VTMutex);
     SDL_DestroyMutex(EVMutex);
 #endif
@@ -2022,7 +2066,7 @@ static void UpdateSoundSync(int16 *Buffer, int Count)
 
     WriteSound(Buffer, Count);
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     if(MDFNDnetplay && GetWriteSound() >= Count * 1.00) // Cheap code to fix sound buffer underruns due to accumulation of timer error during netplay.
     {
       int16 zbuf[128 * 2];
@@ -2042,7 +2086,7 @@ static void UpdateSoundSync(int16 *Buffer, int Count)
   {
     bool nothrottle = MDFN_GetSettingB("nothrottle");
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     if(!NoWaiting && !nothrottle && GameThreadRun && !MDFNDnetplay)
 #else
     if(!NoWaiting && !nothrottle && GameThreadRun )
@@ -2065,7 +2109,7 @@ void MDFND_Update(MDFN_Surface *surface, int16 *Buffer, int Count)
 {
   UpdateSoundSync(Buffer, Count);
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   MDFND_UpdateInput();
 #else
   wii_vb_update_controls();
@@ -2073,7 +2117,7 @@ void MDFND_Update(MDFN_Surface *surface, int16 *Buffer, int Count)
 
   if(surface)
   {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     if(pending_snapshot)
       MDFNI_SaveSnapshot(surface, (MDFN_Rect *)&VTDisplayRects[VTBackBuffer], (MDFN_Rect *)VTLineWidths[VTBackBuffer]);
 
@@ -2097,7 +2141,7 @@ void MDFND_Update(MDFN_Surface *surface, int16 *Buffer, int Count)
     for fast-forwarding to respond well(since keyboard updates are
     handled in the main thread) on slower systems or when using a higher fast-forwarding speed ratio.
     */
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
     if( (last_btime + 100) < SDL_GetTicks())
     {
       //puts("Eep");
@@ -2118,13 +2162,13 @@ void MDFND_Update(MDFN_Surface *surface, int16 *Buffer, int Count)
       VTReady = VTBuffer[VTBackBuffer];
 
       VTBackBuffer ^= 1;
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
       last_btime = SDL_GetTicks();
 #endif
       FPS_IncBlitted();
     }
   }
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   else if(IsConsoleCheatConfigActive() && !VTReady)
   {
     VTBackBuffer ^= 1;

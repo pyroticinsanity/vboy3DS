@@ -29,7 +29,7 @@
 #include "video.h"
 #include "video/resize.h"
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 #include "movie.h"
 #include "netplay.h"
 #endif
@@ -917,7 +917,7 @@ void MDFNI_SelectState(int w)
   MDFND_SetStateStatus(NULL);
   return; 
  }
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
  MDFNI_SelectMovie(-1);
 #endif
 
@@ -969,7 +969,7 @@ int MDFNI_LoadState(const char *fname, const char *suffix)
  */
  if(MDFNSS_Load(fname, suffix))
  {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(MDFNnetplay)
    MDFNNET_SendState();
   
@@ -1061,7 +1061,7 @@ void MDFN_StateEvilEnd(void)
 
  if(bcs)
  {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(MDFNMOV_IsRecording())
    MDFN_StateEvilFlushMovieLove();
 #endif
@@ -1085,7 +1085,7 @@ void MDFN_StateEvilFlushMovieLove(void)
  {
   if(bcs[bahpos].MovieLove.data)
   {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
    if(bcs[x].data)
     MDFNMOV_ForceRecord(&bcs[bahpos].MovieLove);
 #endif
@@ -1161,7 +1161,7 @@ int MDFN_StateEvil(int rewind)
 
    MDFNSS_LoadSM(&sm, 0, 1);
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
    free(MDFNMOV_GrabRewindJoy().data);
 #endif
    return(1);
@@ -1174,7 +1174,7 @@ int MDFN_StateEvil(int rewind)
 
   bcspos = (bcspos + 1) % SRW_NUM;
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(MDFNMOV_IsRecording())
   {
    if(bcs[bcspos].data && bcs[bcspos].MovieLove.data)
@@ -1249,7 +1249,7 @@ int MDFN_StateEvil(int rewind)
    }
   }
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(MDFNMOV_IsRecording())
    bcs[bcspos].MovieLove = MDFNMOV_GrabRewindJoy();
 #endif

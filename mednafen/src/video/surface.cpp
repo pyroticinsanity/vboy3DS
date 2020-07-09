@@ -63,7 +63,7 @@ void MDFN_Surface::Init(void *const p_pixels, const uint32 p_width, const uint32
 
   memcpy(&format, &nf, sizeof(MDFN_PixelFormat));
 
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   if(nf.bpp == 8)
   {
 
@@ -98,7 +98,7 @@ void MDFN_Surface::Init(void *const p_pixels, const uint32 p_width, const uint32
   else
   {
     if(!(rpix = calloc(1, p_pitchinpix * p_height * (nf.bpp / 8))))
-      throw(1);
+      exit(1); //throw(1);
   }
 
   if(nf.bpp == 8)

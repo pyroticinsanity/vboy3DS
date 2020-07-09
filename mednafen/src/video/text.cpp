@@ -51,7 +51,7 @@ void MDFN_InitFontData(void)
   unsigned int inx;
 
   memset(FontDataCache, 0, sizeof(FontDataCache));
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
 
   for(inx=x=0;x<65536;x++)
   {

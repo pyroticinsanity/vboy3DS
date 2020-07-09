@@ -17,6 +17,8 @@
 
 #include "vb.h"
 #include "vip.h"
+
+#include <SDL.h>
 #include <math.h>
 
 #ifdef WII_NETTRACE
@@ -28,6 +30,8 @@
 #include "wii_vb.h"
 extern SDL_Surface* screen;
 extern SDL_Palette orig_8bpp_palette;
+#elif defined(_3DS)
+#include "3ds_vb.h"
 #endif
 
 #define VIP_DBGMSG(format, ...) { }
@@ -519,7 +523,7 @@ namespace MDFN_IEN_VB
       puts("IRQ not asserted"); 
 #endif
   }
-
+  
   bool VIP_Init(void)
   {
     InstantDisplayHack = false;
@@ -1120,11 +1124,11 @@ namespace MDFN_IEN_VB
   }
 
 #if BPP == 8
-  static uint8 AnaSlowBuf[384][224];
+    static uint8 AnaSlowBuf[384][224];
 #elif BPP == 16
-  static uint16 AnaSlowBuf[384][224];
+    static uin16 AnaSlowBuf[384][224];
 #else
-  static uint32 AnaSlowBuf[384][224];
+    static uint32 AnaSlowBuf[384][224];
 #endif  
 
   static INLINE void CopyFBColumnToTarget_AnaglyphSlow_BASE(const bool DisplayActive_arg, const int lr)
@@ -1162,16 +1166,16 @@ namespace MDFN_IEN_VB
     }
     else
     {
-      //      uint32 *target = surface->pixels + Column;
+//      uint32 *target = surface->pixels + Column;
 #if BPP == 8
-      uint8 *target = surface->pixels8 + Column;
-      const uint8 *left_src = AnaSlowBuf[Column];
+    uint8 *target = surface->pixels8 + Column;
+    const uint8 *left_src = AnaSlowBuf[Column];
 #elif BPP == 16
-      uint16 *target = surface->pixels16 + Column;
-      const uint16 *left_src = AnaSlowBuf[Column];
+    uint16 *target = surface->pixels16 + Column;
+    const uint16 *left_src = AnaSlowBuf[Column];
 #else
-      uint32 *target = surface->pixels + Column;
-      const uint32 *left_src = AnaSlowBuf[Column];
+    uint32 *target = surface->pixels + Column;
+    const uint32 *left_src = AnaSlowBuf[Column];
 #endif      
       const int32 pitch32 = surface->pitch32;
 
@@ -1465,27 +1469,27 @@ namespace MDFN_IEN_VB
           {
             if( !vb_skip_frame )
             {
-            VIP_DrawBlock(DrawingBlock, DrawingBuffers[0] + 8, DrawingBuffers[1] + 8);
+              VIP_DrawBlock(DrawingBlock, DrawingBuffers[0] + 8, DrawingBuffers[1] + 8);
 
-            for(int lr = 0; lr < 2; lr++)
-            {
-              uint8 *FB_Target = FB[DrawingFB][lr] + DrawingBlock * 2;
-
-              for(int x = 0; x < 384; x++)
+              for(int lr = 0; lr < 2; lr++)
               {
-                FB_Target[64 * x + 0] = (DrawingBuffers[lr][8 + x + 512 * 0] << 0)
-                  | (DrawingBuffers[lr][8 + x + 512 * 1] << 2)
-                  | (DrawingBuffers[lr][8 + x + 512 * 2] << 4)
-                  | (DrawingBuffers[lr][8 + x + 512 * 3] << 6);
+                uint8 *FB_Target = FB[DrawingFB][lr] + DrawingBlock * 2;
 
-                FB_Target[64 * x + 1] = (DrawingBuffers[lr][8 + x + 512 * 4] << 0) 
-                  | (DrawingBuffers[lr][8 + x + 512 * 5] << 2)
-                  | (DrawingBuffers[lr][8 + x + 512 * 6] << 4) 
-                  | (DrawingBuffers[lr][8 + x + 512 * 7] << 6);
+                for(int x = 0; x < 384; x++)
+                {
+                  FB_Target[64 * x + 0] = (DrawingBuffers[lr][8 + x + 512 * 0] << 0)
+                    | (DrawingBuffers[lr][8 + x + 512 * 1] << 2)
+                    | (DrawingBuffers[lr][8 + x + 512 * 2] << 4)
+                    | (DrawingBuffers[lr][8 + x + 512 * 3] << 6);
 
-              }              
+                  FB_Target[64 * x + 1] = (DrawingBuffers[lr][8 + x + 512 * 4] << 0) 
+                    | (DrawingBuffers[lr][8 + x + 512 * 5] << 2)
+                    | (DrawingBuffers[lr][8 + x + 512 * 6] << 4) 
+                    | (DrawingBuffers[lr][8 + x + 512 * 7] << 6);
+
+                }
+              }
             }
-          }
           }
 
           SBOUT_InactiveTime = running_timestamp + 1120;
@@ -1575,37 +1579,37 @@ namespace MDFN_IEN_VB
 
             if( !vb_skip_frame )
             {
-            if(!skip && InstantDisplayHack)
-            {
-              // Ugly kludge, fix in the future.
-              int32 save_DisplayRegion = DisplayRegion;
-              int32 save_Column = Column;
-              uint8 save_Repeat = Repeat;
-
-              for(int lr = 0; lr < 2; lr++)
+              if(!skip && InstantDisplayHack)
               {
-                DisplayRegion = lr << 1;
-                for(Column = 0; Column < 384; Column++)
+                // Ugly kludge, fix in the future.
+                int32 save_DisplayRegion = DisplayRegion;
+                int32 save_Column = Column;
+                uint8 save_Repeat = Repeat;
+
+                for(int lr = 0; lr < 2; lr++)
                 {
-                  if(!(Column & 3))
+                  DisplayRegion = lr << 1;
+                  for(Column = 0; Column < 384; Column++)
                   {
-                    uint16 ctdata = VIP_MA16R16(DRAM, 0x1DFFE - ((Column >> 2) * 2) - (lr ? 0 : 0x200));
-
-                    if((ctdata >> 8) != Repeat)
+                    if(!(Column & 3))
                     {
-                      Repeat = ctdata >> 8;
-                      RecalcBrightnessCache();
-                    }
-                  }
+                      uint16 ctdata = VIP_MA16R16(DRAM, 0x1DFFE - ((Column >> 2) * 2) - (lr ? 0 : 0x200));
 
-                  CopyFBColumnToTarget();
+                      if((ctdata >> 8) != Repeat)
+                      {
+                        Repeat = ctdata >> 8;
+                        RecalcBrightnessCache();
+                      }
+                    }
+
+                    CopyFBColumnToTarget();
+                  }
                 }
+                DisplayRegion = save_DisplayRegion;
+                Column = save_Column;
+                Repeat = save_Repeat;
+                RecalcBrightnessCache();
               }
-              DisplayRegion = save_DisplayRegion;
-              Column = save_Column;
-              Repeat = save_Repeat;
-              RecalcBrightnessCache();
-            }            
             }
 
             VB_ExitLoop();

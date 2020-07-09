@@ -33,7 +33,7 @@
 
 void MDFNI_SaveSnapshot(const MDFN_Surface *src, const MDFN_Rect *rect, const MDFN_Rect *LineWidths)
 {
-#ifndef WII
+#if !defined(WII) && !defined(_3DS)
   FileWrapper *pp = NULL;
 
   try
