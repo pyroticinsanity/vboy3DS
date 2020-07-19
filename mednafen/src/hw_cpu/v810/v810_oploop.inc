@@ -142,8 +142,8 @@
 
 	BEGIN_OP(MOV);
 	    ADDCLOCK(1);
-            SetPREG(arg2, P_REG[arg1]);
-			//asm("mr %[inreg],%[outreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg1]));
+            //SetPREG(arg2, P_REG[arg1]);
+			asm("mov %[outreg],%[inreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg1]));
 	END_OP();
 
 
@@ -154,8 +154,8 @@
              SetFlag(PSW_OV, ((P_REG[arg2]^(~P_REG[arg1]))&(P_REG[arg2]^temp))&0x80000000);
              SetFlag(PSW_CY, temp < P_REG[arg2]);
 
-             SetPREG(arg2, temp);
-			 //asm("mr %[inreg],%[outreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (temp));
+             //SetPREG(arg2, temp);
+			 asm("mov %[outreg],%[inreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (temp));
 	     SetSZ(P_REG[arg2]);
 	END_OP();
 
@@ -167,8 +167,8 @@
              SetFlag(PSW_OV, ((P_REG[arg2]^P_REG[arg1])&(P_REG[arg2]^temp))&0x80000000);
              SetFlag(PSW_CY, temp > P_REG[arg2]);
 
-	     SetPREG(arg2, temp);
-		 //asm("mr %[inreg],%[outreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (temp));
+	     //SetPREG(arg2, temp);
+		 asm("mov %[outreg],%[inreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (temp));
 	     SetSZ(P_REG[arg2]);
 	END_OP();
 
@@ -190,8 +190,8 @@
             // set CY before we destroy the regisrer info....
             SetFlag(PSW_CY, (val != 0) && ((P_REG[arg2] >> (32 - val))&0x01) );
 	    SetFlag(PSW_OV, FALSE);
-            SetPREG(arg2, P_REG[arg2] << val);
-			//asm("slw %[outreg],%[inreg],%[shiftreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg2]) , [shiftreg]"r" (val));
+            //SetPREG(arg2, P_REG[arg2] << val);
+			asm("lsl %[outreg],%[inreg],%[shiftreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg2]) , [shiftreg]"r" (val));
 	    SetSZ(P_REG[arg2]);            
 	END_OP();
 			
@@ -201,8 +201,8 @@
             // set CY before we destroy the regisrer info....
             SetFlag(PSW_CY, (val) && ((P_REG[arg2] >> (val-1))&0x01));
 	    SetFlag(PSW_OV, FALSE);
-	    SetPREG(arg2, P_REG[arg2] >> val);
-		//asm("srw %[outreg],%[inreg],%[shiftreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg2]) , [shiftreg]"r" (val));
+	    //SetPREG(arg2, P_REG[arg2] >> val);
+		asm("lsr %[outreg],%[inreg],%[shiftreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg2]) , [shiftreg]"r" (val));
 	    SetSZ(P_REG[arg2]);
 	END_OP();
 
@@ -221,40 +221,40 @@
 	    SetFlag(PSW_CY, (val) && ((P_REG[arg2]>>(val-1))&0x01) );
 	    SetFlag(PSW_OV, FALSE);
 
-	    SetPREG(arg2, (uint32) ((int32)P_REG[arg2] >> val));
-		//asm("sraw %[outreg],%[inreg],%[shiftreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg2]) , [shiftreg]"r" (val));
+	    //SetPREG(arg2, (uint32) ((int32)P_REG[arg2] >> val));
+		asm("asr %[outreg],%[inreg],%[shiftreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg2]) , [shiftreg]"r" (val));
             
 	    SetSZ(P_REG[arg2]);
 	END_OP();
 
 	BEGIN_OP(OR);
             ADDCLOCK(1);
-            SetPREG(arg2, P_REG[arg1] | P_REG[arg2]);
-			//asm("or %[outreg],%[inreg],%[inreg2]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg1]), [inreg2]"r" (P_REG[arg2]));
+            //SetPREG(arg2, P_REG[arg1] | P_REG[arg2]);
+			asm("orr %[outreg],%[inreg],%[inreg2]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg1]), [inreg2]"r" (P_REG[arg2]));
 	    SetFlag(PSW_OV, FALSE);
 	    SetSZ(P_REG[arg2]);
 	END_OP();
 
 	BEGIN_OP(AND);
             ADDCLOCK(1);
-            SetPREG(arg2, P_REG[arg1] & P_REG[arg2]);
-			//asm("and %[outreg],%[inreg],%[inreg2]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg1]), [inreg2]"r" (P_REG[arg2]));
+            //SetPREG(arg2, P_REG[arg1] & P_REG[arg2]);
+			asm("and %[outreg],%[inreg],%[inreg2]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg1]), [inreg2]"r" (P_REG[arg2]));
 	    SetFlag(PSW_OV, FALSE);
 	    SetSZ(P_REG[arg2]);
 	END_OP();
 
 	BEGIN_OP(XOR);
             ADDCLOCK(1);
-	    SetPREG(arg2, P_REG[arg1] ^ P_REG[arg2]);
-		//asm("xor %[outreg],%[inreg],%[inreg2]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg1]), [inreg2]"r" (P_REG[arg2]));
+	    //SetPREG(arg2, P_REG[arg1] ^ P_REG[arg2]);
+		asm("eor %[outreg],%[inreg],%[inreg2]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg1]), [inreg2]"r" (P_REG[arg2]));
 	    SetFlag(PSW_OV, FALSE);
 	    SetSZ(P_REG[arg2]);
 	END_OP();
 
 	BEGIN_OP(NOT);
             ADDCLOCK(1);
-	    SetPREG(arg2, ~P_REG[arg1]);
-		//asm("mr %[inreg],%[outreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (~P_REG[arg1]));//There's probably a faster way to do this
+	    //SetPREG(arg2, ~P_REG[arg1]);
+		asm("mov %[outreg],%[inreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (~P_REG[arg1]));//There's probably a faster way to do this
 	    SetFlag(PSW_OV, FALSE);
 	    SetSZ(P_REG[arg2]);
 	END_OP();
